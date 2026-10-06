@@ -77,19 +77,79 @@ CREATE TABLE IF NOT EXISTS t_salt_record_flow (
 CREATE TABLE IF NOT EXISTS t_salt_renew_bill (
   id bigint NOT NULL COMMENT '主键',
   bill_no varchar(64) DEFAULT NULL COMMENT '延续换证核签单',
+  ent_no varchar(64) DEFAULT NULL COMMENT '所对批发企业代号（受理对象）',
   node_no int DEFAULT NULL COMMENT '当前所在档口 0..2（县初核/市复审/省核准）',
-  sign_mode int DEFAULT NULL COMMENT '同档算齐办法 0一名即可 1两名须同判',
-  need_count int DEFAULT NULL COMMENT '本档应落人数',
-  sign_count int DEFAULT NULL COMMENT '本档已落印数',
-  status int DEFAULT NULL COMMENT '核签情形 0在核 1已办结 2已挪回',
+  cur_round int DEFAULT '1' COMMENT '当前轮次：立案为1，每退回一记加一，新旧各轮分开留底',
+  sign_mode int DEFAULT NULL COMMENT '本档算齐办法 0一名即可 1两名须同判 2一名且须先查旧证',
+  need_count int DEFAULT NULL COMMENT '本档应落人数（系统按档口填，不留人手格子）',
+  sign_count int DEFAULT NULL COMMENT '本档已落印数（系统顺落印次序逐笔点出回填，不许手填）',
+  status int DEFAULT NULL COMMENT '核签情形 0在核 1已办结 2已否决',
+  del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除（办结单不得删除）',
+  create_by varchar(64) DEFAULT NULL COMMENT '创建者',
+  create_time datetime DEFAULT NULL COMMENT '创建时间',
+  update_by varchar(64) DEFAULT NULL COMMENT '更新者',
+  update_time datetime DEFAULT NULL COMMENT '更新时间',
+  remark varchar(500) DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_renew_bill_no (bill_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='延续换证核签单';
+
+-- 落印流水：核签单上每一笔印都在此成行；退回只作软清零（valid 置 1），旧笔一笔不抹。
+CREATE TABLE IF NOT EXISTS t_salt_renew_sign (
+  id bigint NOT NULL COMMENT '主键',
+  bill_id bigint NOT NULL COMMENT '所属核签单主键',
+  bill_no varchar(64) DEFAULT NULL COMMENT '所属核签单代号（受理簿编号）',
+  round_no int NOT NULL COMMENT '落印当轮轮次',
+  node_no int NOT NULL COMMENT '落印档口 0县初核 1市复审 2省核准',
+  signer varchar(64) NOT NULL COMMENT '落印人',
+  verdict int NOT NULL COMMENT '判词 1可延续 0不予延续',
+  valid int DEFAULT '0' COMMENT '此笔还算不算数 0有效 1本轮退回当场清零（留底）',
+  check_id bigint DEFAULT NULL COMMENT '省核准落印所凭的旧证核查笔主键',
+  del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
+  create_by varchar(64) DEFAULT NULL COMMENT '创建者',
+  create_time datetime DEFAULT NULL COMMENT '创建时间（哪一天补的，各有底档）',
+  update_by varchar(64) DEFAULT NULL COMMENT '更新者',
+  update_time datetime DEFAULT NULL COMMENT '更新时间',
+  remark varchar(500) DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (id),
+  KEY idx_renew_sign_bill (bill_id, round_no, node_no, valid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='延续换证落印流水';
+
+-- 旧证缴回核查：省核准落印前必有的那一笔，看过过往有无未缴回旧证。
+CREATE TABLE IF NOT EXISTS t_salt_renew_check (
+  id bigint NOT NULL COMMENT '主键',
+  bill_id bigint NOT NULL COMMENT '所属核签单主键',
+  bill_no varchar(64) DEFAULT NULL COMMENT '所属核签单代号',
+  round_no int NOT NULL COMMENT '核查当轮轮次（退回重走后须在新一轮重新看过）',
+  old_cert_returned int NOT NULL COMMENT '旧证缴回情形 1已缴回 0尚有未缴回旧证',
+  checker varchar(64) NOT NULL COMMENT '核查人',
+  check_time datetime NOT NULL COMMENT '看过这一笔的时刻',
   del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
   create_by varchar(64) DEFAULT NULL COMMENT '创建者',
   create_time datetime DEFAULT NULL COMMENT '创建时间',
   update_by varchar(64) DEFAULT NULL COMMENT '更新者',
   update_time datetime DEFAULT NULL COMMENT '更新时间',
   remark varchar(500) DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='延续换证核签单';
+  PRIMARY KEY (id),
+  KEY idx_renew_check_bill (bill_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='旧证缴回核查笔';
+
+-- 发证名册：省局点齐的同一事务里登记，核签结果与名册同一次算出，不许一处取数一处手填。
+CREATE TABLE IF NOT EXISTS t_salt_cert_registry (
+  id bigint NOT NULL COMMENT '主键',
+  bill_no varchar(64) NOT NULL COMMENT '来源核签单代号',
+  ent_no varchar(64) DEFAULT NULL COMMENT '领证批发企业代号',
+  issue_no varchar(64) DEFAULT NULL COMMENT '新发证书编号',
+  issue_time datetime DEFAULT NULL COMMENT '发证时刻（与省局落印同时同事务）',
+  del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除（办结名册不得删除）',
+  create_by varchar(64) DEFAULT NULL COMMENT '创建者',
+  create_time datetime DEFAULT NULL COMMENT '创建时间',
+  update_by varchar(64) DEFAULT NULL COMMENT '更新者',
+  update_time datetime DEFAULT NULL COMMENT '更新时间',
+  remark varchar(500) DEFAULT NULL COMMENT '备注',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_cert_registry_bill (bill_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='批发企业发证名册';
 
 CREATE TABLE IF NOT EXISTS t_salt_spot_row (
   id bigint NOT NULL COMMENT '主键',

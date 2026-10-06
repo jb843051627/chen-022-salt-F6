@@ -36,29 +36,39 @@ public class TSaltRenewBill implements Serializable {
     @ApiModelProperty(value = "延续换证核签单")
     private String billNo;
 
+    /** 所对批发企业代号（受理对象） */
+    @TableField("ent_no")
+    @ApiModelProperty(value = "所对批发企业代号（受理对象）")
+    private String entNo;
+
     /** 当前所在档口 0..2（县初核/市复审/省核准） */
     @TableField("node_no")
     @ApiModelProperty(value = "当前所在档口 0..2（县初核/市复审/省核准）")
     private Integer nodeNo;
 
-    /** 同档算齐办法 0一名即可 1两名须同判 */
+    /** 当前轮次：立案为1，每退回一记加一，新旧各轮分开留底 */
+    @TableField("cur_round")
+    @ApiModelProperty(value = "当前轮次：立案为1，每退回一记加一，新旧各轮分开留底")
+    private Integer curRound;
+
+    /** 本档算齐办法 0一名即可 1两名须同判 2一名且须先查旧证 */
     @TableField("sign_mode")
-    @ApiModelProperty(value = "同档算齐办法 0一名即可 1两名须同判")
+    @ApiModelProperty(value = "本档算齐办法 0一名即可 1两名须同判 2一名且须先查旧证")
     private Integer signMode;
 
-    /** 本档应落人数 */
+    /** 本档应落人数（系统按档口填，不留人手格子） */
     @TableField("need_count")
-    @ApiModelProperty(value = "本档应落人数")
+    @ApiModelProperty(value = "本档应落人数（系统按档口填，不留人手格子）")
     private Integer needCount;
 
-    /** 本档已落印数 */
+    /** 本档已落印数（系统顺落印次序逐笔点出回填，不许手填） */
     @TableField("sign_count")
-    @ApiModelProperty(value = "本档已落印数")
+    @ApiModelProperty(value = "本档已落印数（系统顺落印次序逐笔点出回填，不许手填）")
     private Integer signCount;
 
-    /** 核签情形 0在核 1已办结 2已挪回 */
+    /** 核签情形 0在核 1已办结 2已否决 */
     @TableField("status")
-    @ApiModelProperty(value = "核签情形 0在核 1已办结 2已挪回")
+    @ApiModelProperty(value = "核签情形 0在核 1已办结 2已否决")
     private Integer status;
 
     /** 删除标记 0正常 1删除 */
@@ -109,12 +119,28 @@ public class TSaltRenewBill implements Serializable {
         this.billNo = billNo;
     }
 
+    public String getEntNo() {
+        return entNo;
+    }
+
+    public void setEntNo(String entNo) {
+        this.entNo = entNo;
+    }
+
     public Integer getNodeNo() {
         return nodeNo;
     }
 
     public void setNodeNo(Integer nodeNo) {
         this.nodeNo = nodeNo;
+    }
+
+    public Integer getCurRound() {
+        return curRound;
+    }
+
+    public void setCurRound(Integer curRound) {
+        this.curRound = curRound;
     }
 
     public Integer getSignMode() {
