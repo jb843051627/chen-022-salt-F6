@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS t_salt_renew_bill (
   sign_mode int DEFAULT NULL COMMENT '同档算齐办法 0一名即可 1两名须同判',
   need_count int DEFAULT NULL COMMENT '本档应落人数',
   sign_count int DEFAULT NULL COMMENT '本档已落印数',
-  status int DEFAULT NULL COMMENT '核签情形 0在核 1已办结 2已挪回',
+  status int DEFAULT NULL COMMENT '核签情形 0在核 1已办结 2已挪回 3待复议 4已否决',
   del_flag int DEFAULT '0' COMMENT '删除标记 0正常 1删除',
   create_by varchar(64) DEFAULT NULL COMMENT '创建者',
   create_time datetime DEFAULT NULL COMMENT '创建时间',

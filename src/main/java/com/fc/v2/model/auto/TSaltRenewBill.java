@@ -56,9 +56,9 @@ public class TSaltRenewBill implements Serializable {
     @ApiModelProperty(value = "本档已落印数")
     private Integer signCount;
 
-    /** 核签情形 0在核 1已办结 2已挪回 */
+    /** 核签情形 0在核 1已办结 2已挪回 3待复议 4已否决 */
     @TableField("status")
-    @ApiModelProperty(value = "核签情形 0在核 1已办结 2已挪回")
+    @ApiModelProperty(value = "核签情形 0在核 1已办结 2已挪回 3待复议 4已否决")
     private Integer status;
 
     /** 删除标记 0正常 1删除 */
